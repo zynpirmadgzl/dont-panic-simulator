@@ -79,7 +79,7 @@ def get_llm(temperature: float = 0.7) -> BaseChatModel:
     Constructs and returns CustomQwenLLM targeting qwen-397b on llmstat.iletisim.gov.tr.
     """
     raw_api_key = os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY") or ""
-    raw_base_url = os.getenv("LLM_BASE_URL") or "https://llmstat.iletisim.gov.tr/v1"
+    raw_base_url = os.getenv("LLM_BASE_URL") or "https://api.openai.com/v1"
     raw_model_name = os.getenv("LLM_MODEL") or "qwen-397b"
 
     api_key = raw_api_key.strip(" \"'\t\n\r")

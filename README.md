@@ -134,7 +134,7 @@ HOST=0.0.0.0
 ENV=development
 
 LLM_API_KEY=your_actual_api_key_here
-LLM_BASE_URL=https://llmstat.iletisim.gov.tr/v1
+LLM_BASE_URL=https://api.your-llm-provider.com/v1
 LLM_MODEL=qwen-397b
 ```
 
