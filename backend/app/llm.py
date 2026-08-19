@@ -3,6 +3,7 @@ Custom LLM Engine targeting qwen-397b via direct HTTP API.
 Bypasses OpenAI SDK header restrictions and handles Qwen reasoning tags.
 """
 import os
+import re
 import json
 import asyncio
 import httpx
@@ -57,7 +58,7 @@ class CustomQwenLLM(BaseChatModel):
             "temperature": self.temperature
         }
 
-        async with httpx.AsyncClient(verify=False, timeout=60.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=120.0) as client:
             resp = await client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
             data = resp.json()
@@ -68,6 +69,9 @@ class CustomQwenLLM(BaseChatModel):
             cleaned_content = raw_content
             if "</think>" in cleaned_content:
                 cleaned_content = cleaned_content.split("</think>")[-1].strip()
+
+            # Sanitize invalid leading plus signs in JSON numbers (e.g. "+8" -> "8", "+2.5" -> "2.5")
+            cleaned_content = re.sub(r':\s*\+(\d+(\.\d+)?)', r': \1', cleaned_content)
 
             message = AIMessage(content=cleaned_content)
             generation = ChatGeneration(message=message)

@@ -43,6 +43,8 @@ async def orchestrator_node(state: SimulationState) -> Dict[str, Any]:
         ("system", """You are the Lead Crisis Orchestrator Agent for 'Dont Panic', an AI-native high-stakes corporate crisis simulation platform.
 Your job is to evaluate the user's PR press release, tweet, or tactical move in response to an escalating crisis.
 
+DİL KURALI: `reasoning` alanı ve tüm değerlendirme açıklamaları KESİNLİKLE %100 TÜRKÇE OLMALIDIR.
+
 Target Company Context:
 - Name: {company_name}
 - Industry: {industry}
@@ -55,9 +57,9 @@ Current Metrics:
 - Turn Number: {turn_count}
 
 Assess the user's action objectively. Determine the impact deltas:
-- crisis_level_delta: integer between -30 (huge cooling) and +30 (catastrophic escalation)
-- brand_reputation_delta: integer between -30 and +30
-- stock_price_impact_delta: float between -15.0 and +10.0
+- crisis_level_delta: integer between -30 (huge cooling) and 30 (catastrophic escalation). DO NOT use leading '+' sign (e.g. use 8, not +8).
+- brand_reputation_delta: integer between -30 and 30. DO NOT use leading '+' sign (e.g. use 5, not +5).
+- stock_price_impact_delta: float between -15.0 and 10.0. DO NOT use leading '+' sign (e.g. use 2.5, not +2.5).
 
 Be rigorous. Weak, tone-deaf, or defensive statements should severely worsen metrics.
 
@@ -91,7 +93,7 @@ IMPORTANT: You MUST format your response as a valid JSON object matching the fol
 
     orchestrator_log = {
         "agent_name": "Orchestrator",
-        "step": f"Turn {turn_count} Strategic Evaluation (qwen-397b)",
+        "step": f"Tur {turn_count} Stratejik Değerlendirme (qwen-397b)",
         "reasoning": res.reasoning,
         "metrics_delta": {
             "crisis_level_delta": res.crisis_level_delta,
@@ -124,12 +126,14 @@ async def journalist_node(state: SimulationState) -> Dict[str, Any]:
         ("system", """You are the Journalist Agent in 'Dont Panic', an AI crisis simulator.
 You represent elite tech and business news media outlets (e.g., TechChronicle Daily, Apex Business Wire, Bloomberg Tech, MarketPulse).
 
+DİL KURALI: `headline` (haber başlığı) ve `reasoning` (gerekçe) KESİNLİKLE %100 TÜRKÇE OLMALIDIR.
+
 Company Context:
 - Company: {company_name}
 - Current Crisis Severity: {crisis_level}/100
 - User's Latest Press Release / Response: '{user_action}'
 
-Generate an authoritative news headline or article snippet reacting to the situation.
+Generate an authoritative news headline or article snippet reacting to the situation in TURKISH.
 
 IMPORTANT: You MUST format your response as a valid JSON object matching the following instructions:
 {format_instructions}"""),
@@ -163,7 +167,7 @@ IMPORTANT: You MUST format your response as a valid JSON object matching the fol
 
     journalist_log = {
         "agent_name": "Journalist",
-        "step": "Media Framing Analysis (qwen-397b)",
+        "step": "Medya Çerçeveleme Analizi (qwen-397b)",
         "reasoning": res.reasoning,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
@@ -189,12 +193,14 @@ async def troll_node(state: SimulationState) -> Dict[str, Any]:
         ("system", """You are the Troll Agent representing the unscripted, chaotic internet mob in 'Dont Panic'.
 You craft viral, sarcastic, meme-heavy, and savage tweets with hashtags reacting to corporate crisis blunders or PR announcements.
 
+DİL KURALI: `post_content` (sosyal medya gönderisi/tweet) ve `reasoning` (gerekçe) KESİNLİKLE %100 TÜRKÇE OLMALIDIR. Türkçe sosyal medya (Twitter/X) mizahı, linç tepkileri veya destek tweetleri üretin.
+
 Company Context:
 - Target Company: {company_name}
 - Current Crisis Severity: {crisis_level}/100
 - User PR Move: '{user_action}'
 
-Create an engaging, viral social post from an anonymous handle or tech critic.
+Create an engaging, viral social post from an anonymous handle or tech critic in TURKISH.
 
 IMPORTANT: You MUST format your response as a valid JSON object matching the following instructions:
 {format_instructions}"""),
@@ -228,7 +234,7 @@ IMPORTANT: You MUST format your response as a valid JSON object matching the fol
 
     troll_log = {
         "agent_name": "Troll",
-        "step": "Viral Mob Dynamics Generation (qwen-397b)",
+        "step": "Viralleşen Sosyal Medya Tepkileri (qwen-397b)",
         "reasoning": res.reasoning,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }

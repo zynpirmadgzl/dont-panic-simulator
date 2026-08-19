@@ -61,7 +61,7 @@ class MetricsUpdateSchema(BaseModel):
 
 
 class WebSocketMessage(BaseModel):
-    event_type: Literal["agent_log", "social_post", "metrics_update", "turn_complete", "error", "simulation_started"]
+    event_type: Literal["agent_log", "social_post", "metrics_update", "turn_complete", "error", "simulation_started", "agent_progress"]
     data: Dict[str, Any]
     session_id: str
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

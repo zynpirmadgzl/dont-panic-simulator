@@ -187,12 +187,126 @@ async def websocket_simulation_endpoint(websocket: WebSocket, session_id: str):
 
             # Update current state with user action
             current_state["user_action"] = user_action_text
-            initial_feed_len = len(current_state.get("mock_social_feed", []))
-            initial_log_len = len(current_state.get("agent_logs", []))
 
-            # Run LangGraph StateGraph execution
+            # Send initial progress signal: Turn started
+            await manager.broadcast_to_session(
+                session_id,
+                WebSocketMessage(
+                    event_type="agent_progress",
+                    session_id=session_id,
+                    data={
+                        "step": 0,
+                        "total_steps": 3,
+                        "agent_name": "System",
+                        "status_message": "Kriz müdahalesi yapay zeka ajanlarına iletildi. Analiz başlatılıyor...",
+                        "percentage": 10
+                    }
+                ).model_dump()
+            )
+
+            # Run LangGraph StateGraph streaming execution node by node
             try:
-                updated_state = await simulation_graph.ainvoke(current_state)
+                async for chunk in simulation_graph.astream(current_state, stream_mode="updates"):
+                    node_name = list(chunk.keys())[0]
+                    node_output = chunk[node_name]
+
+                    # Update session state continuously
+                    current_state.update(node_output)
+                    active_sessions[session_id] = current_state
+
+                    if node_name == "orchestrator":
+                        await manager.broadcast_to_session(
+                            session_id,
+                            WebSocketMessage(
+                                event_type="agent_progress",
+                                session_id=session_id,
+                                data={
+                                    "step": 1,
+                                    "total_steps": 3,
+                                    "agent_name": "Orchestrator",
+                                    "status_message": "1/3 Lider Strateji Ajanı (Orchestrator) kriz şiddetini ve metrikleri hesapladı.",
+                                    "percentage": 33
+                                }
+                            ).model_dump()
+                        )
+                        if node_output.get("agent_logs"):
+                            await manager.broadcast_to_session(
+                                session_id,
+                                WebSocketMessage(
+                                    event_type="agent_log",
+                                    session_id=session_id,
+                                    data=node_output["agent_logs"][-1]
+                                ).model_dump()
+                            )
+
+                    elif node_name == "journalist":
+                        await manager.broadcast_to_session(
+                            session_id,
+                            WebSocketMessage(
+                                event_type="agent_progress",
+                                session_id=session_id,
+                                data={
+                                    "step": 2,
+                                    "total_steps": 3,
+                                    "agent_name": "Journalist",
+                                    "status_message": "2/3 Medya & Gazeteci Ajanı son dakika kriz haberini hazırladı.",
+                                    "percentage": 66
+                                }
+                            ).model_dump()
+                        )
+                        if node_output.get("agent_logs"):
+                            await manager.broadcast_to_session(
+                                session_id,
+                                WebSocketMessage(
+                                    event_type="agent_log",
+                                    session_id=session_id,
+                                    data=node_output["agent_logs"][-1]
+                                ).model_dump()
+                            )
+                        if node_output.get("mock_social_feed"):
+                            await manager.broadcast_to_session(
+                                session_id,
+                                WebSocketMessage(
+                                    event_type="social_post",
+                                    session_id=session_id,
+                                    data=node_output["mock_social_feed"][-1]
+                                ).model_dump()
+                            )
+
+                    elif node_name == "troll":
+                        await manager.broadcast_to_session(
+                            session_id,
+                            WebSocketMessage(
+                                event_type="agent_progress",
+                                session_id=session_id,
+                                data={
+                                    "step": 3,
+                                    "total_steps": 3,
+                                    "agent_name": "Troll",
+                                    "status_message": "3/3 Sosyal Medya Ajanı viralleşen halk tepkilerini simüle etti.",
+                                    "percentage": 100
+                                }
+                            ).model_dump()
+                        )
+                        if node_output.get("agent_logs"):
+                            await manager.broadcast_to_session(
+                                session_id,
+                                WebSocketMessage(
+                                    event_type="agent_log",
+                                    session_id=session_id,
+                                    data=node_output["agent_logs"][-1]
+                                ).model_dump()
+                            )
+                        if node_output.get("mock_social_feed"):
+                            await manager.broadcast_to_session(
+                                session_id,
+                                WebSocketMessage(
+                                    event_type="social_post",
+                                    session_id=session_id,
+                                    data=node_output["mock_social_feed"][-1]
+                                ).model_dump()
+                            )
+
             except Exception as graph_err:
                 err_msg = str(graph_err)
                 print(f"[Simulation Graph Execution Error]: {err_msg}")
@@ -201,50 +315,21 @@ async def websocket_simulation_endpoint(websocket: WebSocket, session_id: str):
                         event_type="error",
                         session_id=session_id,
                         data={
-                            "message": f"Simulation Graph Error: {err_msg}",
-                            "hint": "Please check LLM_API_KEY and LLM_BASE_URL in backend/.env"
+                            "message": f"Simülasyon Hatası: {err_msg}",
+                            "hint": "Lütfen backend/.env ayarlarını kontrol edin"
                         }
                     ).model_dump(),
                     websocket
                 )
                 continue
 
-            active_sessions[session_id] = updated_state
-            current_state = updated_state
-
-            # Stream newly generated Agent Logs
-            new_logs = updated_state["agent_logs"][initial_log_len:]
-            for log in new_logs:
-                await manager.broadcast_to_session(
-                    session_id,
-                    WebSocketMessage(
-                        event_type="agent_log",
-                        session_id=session_id,
-                        data=log
-                    ).model_dump()
-                )
-                await asyncio.sleep(0.3)  # Subtle pause for dynamic agent streaming effect
-
-            # Stream newly generated Social Feed Posts
-            new_posts = updated_state["mock_social_feed"][initial_feed_len:]
-            for post in new_posts:
-                await manager.broadcast_to_session(
-                    session_id,
-                    WebSocketMessage(
-                        event_type="social_post",
-                        session_id=session_id,
-                        data=post
-                    ).model_dump()
-                )
-                await asyncio.sleep(0.4)  # Streaming delay effect for social feed emergence
-
             # Stream Metrics Update
             metrics_payload = MetricsUpdateSchema(
-                crisis_level=updated_state["crisis_level"],
-                brand_reputation=updated_state["brand_reputation"],
-                stock_price_impact=updated_state["stock_price_impact"],
-                turn_count=updated_state["turn_count"],
-                is_active=updated_state["is_active"]
+                crisis_level=current_state["crisis_level"],
+                brand_reputation=current_state["brand_reputation"],
+                stock_price_impact=current_state["stock_price_impact"],
+                turn_count=current_state["turn_count"],
+                is_active=current_state["is_active"]
             ).model_dump()
 
             await manager.broadcast_to_session(
@@ -263,8 +348,8 @@ async def websocket_simulation_endpoint(websocket: WebSocket, session_id: str):
                     event_type="turn_complete",
                     session_id=session_id,
                     data={
-                        "turn_count": updated_state["turn_count"],
-                        "summary": f"Turn {updated_state['turn_count']} processed successfully"
+                        "turn_count": current_state["turn_count"],
+                        "summary": f"Tur {current_state['turn_count']} başarıyla tamamlandı."
                     }
                 ).model_dump()
             )
@@ -272,5 +357,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket, session_id: str):
     except WebSocketDisconnect:
         manager.disconnect(session_id, websocket)
     except Exception as e:
+        import traceback
+        print(f"[WebSocket Fatal Error] Exception in session {session_id}: {str(e)}")
+        traceback.print_exc()
         manager.disconnect(session_id, websocket)
-        print(f"[WebSocket Error] Exception in session {session_id}: {str(e)}")

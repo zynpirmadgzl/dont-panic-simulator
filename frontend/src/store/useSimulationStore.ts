@@ -56,16 +56,19 @@ export interface SimulationStoreState {
 
   error_message: string | null;
   ws_connected: boolean;
+  progress_status: { step: number; total_steps: number; status_message: string; percentage: number } | null;
 
   // Actions
   setSession: (sessionId: string, companyName: string, industry: string, vulnerability: string, scenarioId?: string) => void;
   setUserActionInput: (input: string) => void;
   setIsProcessing: (status: boolean) => void;
+  setProgressStatus: (status: { step: number; total_steps: number; status_message: string; percentage: number } | null) => void;
   setWsConnected: (connected: boolean) => void;
   appendAgentLog: (log: AgentLog) => void;
   appendSocialPost: (post: SocialPost) => void;
   updateMetrics: (metrics: { crisis_level: number; brand_reputation: number; stock_price_impact: number; turn_count: number; is_active: boolean }) => void;
   setError: (msg: string | null) => void;
+  hydrateState: (state: any) => void;
   resetSession: () => void;
 }
 
@@ -82,6 +85,7 @@ export const useSimulationStore = create<SimulationStoreState>((set) => ({
   turn_count: 0,
   is_active: true,
   is_processing: false,
+  progress_status: null,
 
   user_action_input: "",
   mock_social_feed: [],
@@ -109,12 +113,19 @@ export const useSimulationStore = create<SimulationStoreState>((set) => ({
       mock_social_feed: [],
       agent_logs: [],
       telemetry_history: [{ turn: 0, crisis_level: 50, brand_reputation: 45, stock_price_impact: -5.4 }],
-      error_message: null
+      error_message: null,
+      progress_status: null
     }),
 
   setUserActionInput: (input) => set({ user_action_input: input }),
 
-  setIsProcessing: (status) => set({ is_processing: status }),
+  setIsProcessing: (status) =>
+    set((state) => ({
+      is_processing: status,
+      progress_status: status ? state.progress_status : null
+    })),
+
+  setProgressStatus: (status) => set({ progress_status: status }),
 
   setWsConnected: (connected) => set({ ws_connected: connected }),
 
@@ -147,6 +158,16 @@ export const useSimulationStore = create<SimulationStoreState>((set) => ({
     }),
 
   setError: (msg) => set({ error_message: msg, is_processing: false }),
+
+  hydrateState: (incomingState) =>
+    set({
+      crisis_level: incomingState.crisis_level ?? 50,
+      brand_reputation: incomingState.brand_reputation ?? 45,
+      stock_price_impact: incomingState.stock_price_impact ?? -5.4,
+      turn_count: incomingState.turn_count ?? 0,
+      mock_social_feed: incomingState.mock_social_feed || [],
+      agent_logs: incomingState.agent_logs || []
+    }),
 
   resetSession: () =>
     set({

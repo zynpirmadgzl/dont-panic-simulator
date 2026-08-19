@@ -9,7 +9,7 @@ interface CrisisTerminalProps {
 }
 
 export const CrisisTerminal: React.FC<CrisisTerminalProps> = ({ onSendAction }) => {
-  const { user_action_input, setUserActionInput, is_processing, error_message, company_name } = useSimulationStore();
+  const { user_action_input, setUserActionInput, is_processing, progress_status, error_message, company_name } = useSimulationStore();
   const [localError, setLocalError] = useState<string | null>(null);
 
   const presets = [
@@ -103,6 +103,29 @@ export const CrisisTerminal: React.FC<CrisisTerminalProps> = ({ onSendAction }) 
             className="w-full bg-[#121214] border border-[#27272A] rounded-xl p-3 text-xs text-white placeholder-[#52525B] focus:outline-none focus:border-[#DC2626] transition resize-none font-sans"
           />
         </div>
+
+        {/* Live Streaming Progress Indicator */}
+        {is_processing && (
+          <div className="bg-[#121214] border border-[#D4AF37]/40 rounded-xl p-3 space-y-2 animate-pulse">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <Loader2 className="w-4 h-4 animate-spin text-[#D4AF37]" />
+                <span className="font-mono text-[#D4AF37] font-bold">
+                  {progress_status?.status_message || "Yapay zeka ajanları kriz müdahalesini analiz ediyor..."}
+                </span>
+              </div>
+              <span className="font-mono text-xs text-[#94A3B8] font-bold">
+                %{progress_status?.percentage || 10}
+              </span>
+            </div>
+            <div className="w-full bg-[#27272A] h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-[#DC2626] via-[#D4AF37] to-[#EF4444] h-full transition-all duration-500 ease-out"
+                style={{ width: `${progress_status?.percentage || 10}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Error Messages */}
         {(localError || error_message) && (

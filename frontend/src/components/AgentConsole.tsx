@@ -64,17 +64,17 @@ export const AgentConsole: React.FC = () => {
                 <div className="flex flex-wrap gap-2 text-[10px] pt-1 border-t border-[#27272A]/40">
                   {log.metrics_delta.crisis_level_delta !== undefined && (
                     <span className={`px-1.5 py-0.5 rounded font-mono ${log.metrics_delta.crisis_level_delta <= 0 ? "bg-emerald-950/60 text-emerald-400" : "bg-rose-950/60 text-rose-400"}`}>
-                      Crisis: {log.metrics_delta.crisis_level_delta > 0 ? `+${log.metrics_delta.crisis_level_delta}` : log.metrics_delta.crisis_level_delta}
+                      Kriz: {log.metrics_delta.crisis_level_delta > 0 ? `+${log.metrics_delta.crisis_level_delta}` : log.metrics_delta.crisis_level_delta}
                     </span>
                   )}
                   {log.metrics_delta.brand_reputation_delta !== undefined && (
                     <span className={`px-1.5 py-0.5 rounded font-mono ${log.metrics_delta.brand_reputation_delta >= 0 ? "bg-emerald-950/60 text-emerald-400" : "bg-rose-950/60 text-rose-400"}`}>
-                      Reputation: {log.metrics_delta.brand_reputation_delta > 0 ? `+${log.metrics_delta.brand_reputation_delta}` : log.metrics_delta.brand_reputation_delta}
+                      İtibar: {log.metrics_delta.brand_reputation_delta > 0 ? `+${log.metrics_delta.brand_reputation_delta}` : log.metrics_delta.brand_reputation_delta}
                     </span>
                   )}
                   {log.metrics_delta.stock_price_impact_delta !== undefined && (
                     <span className={`px-1.5 py-0.5 rounded font-mono ${log.metrics_delta.stock_price_impact_delta >= 0 ? "bg-emerald-950/60 text-emerald-400" : "bg-rose-950/60 text-rose-400"}`}>
-                      Stock: {log.metrics_delta.stock_price_impact_delta > 0 ? `+${log.metrics_delta.stock_price_impact_delta}` : log.metrics_delta.stock_price_impact_delta}%
+                      Hisse: {log.metrics_delta.stock_price_impact_delta > 0 ? `+${log.metrics_delta.stock_price_impact_delta}` : log.metrics_delta.stock_price_impact_delta}%
                     </span>
                   )}
                 </div>
