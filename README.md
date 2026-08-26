@@ -2,7 +2,9 @@
 
 **Project Dont Panic**, yüksek riskli kurumsal kriz anlarında (veri sızıntıları, yapay zeka hataları, CEO deepfake skandalları vb.) üst düzey yöneticilerin ve PR ekiplerinin kriz iletişimi stratejilerini gerçek zamanlı simüle eden **Multi-Agent (Çoklu Yapay Zeka Ajanı)** destekli bir simülasyon ve eğitim platformudur.
 
-![Dont Panic Kriz Yönetim Terminali](docs/dashboard.png)
+![Dont Panic Kriz Yönetim Paneli ve Telemetri Analitiği](docs/dashboard.png)
+
+![Taktik Müdahale Terminali ve Eylem Kontrol Merkezi](docs/terminal.png)
 
 ---
 
