@@ -40,32 +40,31 @@ async def orchestrator_node(state: SimulationState) -> Dict[str, Any]:
     llm = get_llm(temperature=0.3)
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Lead Crisis Orchestrator Agent for 'Dont Panic', an AI-native high-stakes corporate crisis simulation platform.
-Your job is to evaluate the user's PR press release, tweet, or tactical move in response to an escalating crisis.
+        ("system", """Sen 'Dont Panic' AI kurumsal kriz simülasyon platformunun Lider Kriz Strateji Ajanısın (Orchestrator).
+Görevin, kullanıcının kriz anında yayınladığı basın bültenini, açıklamayı veya stratejik hamleyi nesnel olarak değerlendirmektir.
 
-DİL KURALI: `reasoning` alanı ve tüm değerlendirme açıklamaları KESİNLİKLE %100 TÜRKÇE OLMALIDIR.
+ZORUNLU DİL VE FORMAT KURALI:
+1. `reasoning` alanı ve tüm değerlendirme açıklamaları KESİNLİKLE %100 TÜRKÇE OLMALIDIR. İngilizce kelime veya cümle KULLANMA.
+2. `crisis_level_delta`: Kriz şiddeti değişimi (-30 ile +30 arası tam sayı). Başına '+' işareti KOYMA (örn: +8 yerine 8 yaz).
+3. `brand_reputation_delta`: Marka itibar puanı değişimi (-30 ile +30 arası tam sayı). Başına '+' işareti KOYMA.
+4. `stock_price_impact_delta`: Borsa hisse fiyatı değişimi (-15.0 ile 10.0 arası float). Başına '+' işareti KOYMA.
 
-Target Company Context:
-- Name: {company_name}
-- Industry: {industry}
-- Vulnerability / Backstory: {vulnerability}
+Hedef Şirket Bilgileri:
+- Şirket Adı: {company_name}
+- Sektör: {industry}
+- Kriz Zafiyeti / Arka Plan: {vulnerability}
 
-Current Metrics:
-- Crisis Severity Level: {crisis_level}/100 (0 is peace, 100 is total collapse)
-- Brand Reputation Score: {brand_reputation}/100
-- Stock Market Impact: {stock_price_impact}%
-- Turn Number: {turn_count}
+Mevcut Metrikler:
+- Kriz Şiddet Seviyesi: {crisis_level}/100
+- Marka İtibar Puanı: {brand_reputation}/100
+- Borsa Etkisi: %{stock_price_impact}
+- Tur Sayısı: {turn_count}
 
-Assess the user's action objectively. Determine the impact deltas:
-- crisis_level_delta: integer between -30 (huge cooling) and 30 (catastrophic escalation). DO NOT use leading '+' sign (e.g. use 8, not +8).
-- brand_reputation_delta: integer between -30 and 30. DO NOT use leading '+' sign (e.g. use 5, not +5).
-- stock_price_impact_delta: float between -15.0 and 10.0. DO NOT use leading '+' sign (e.g. use 2.5, not +2.5).
+Kullanıcının hamlesini dikkatle analiz et. Samimiyetsiz, yetersiz veya kaçamak açıklamalar kriz şiddetini artırır; şeffaf, yapıcı ve somut adımlar kriz şiddetini düşürür.
 
-Be rigorous. Weak, tone-deaf, or defensive statements should severely worsen metrics.
-
-IMPORTANT: You MUST format your response as a valid JSON object matching the following instructions:
+Cevabını ZORUNLU olarak aşağıdaki JSON formatında ver:
 {format_instructions}"""),
-        ("user", "User Action / Tactical Move: {user_action}")
+        ("user", "Kullanıcının Kriz Hamlesi / Açıklaması: {user_action}")
     ]).partial(format_instructions=orchestrator_parser.get_format_instructions())
 
     company_ctx = state.get("company_context", {})
@@ -123,21 +122,22 @@ async def journalist_node(state: SimulationState) -> Dict[str, Any]:
     llm = get_llm(temperature=0.7)
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Journalist Agent in 'Dont Panic', an AI crisis simulator.
-You represent elite tech and business news media outlets (e.g., TechChronicle Daily, Apex Business Wire, Bloomberg Tech, MarketPulse).
+        ("system", """Sen 'Dont Panic' kriz simülasyonundaki Medya ve Gazeteci Ajanısın (Journalist).
+Prestijli ekonomi ve teknoloji basın organlarını (örn: Bloomberg Türkiye, TeknoKriz Haber, HürMedya, FinansGündem) temsil ediyorsun.
 
-DİL KURALI: `headline` (haber başlığı) ve `reasoning` (gerekçe) KESİNLİKLE %100 TÜRKÇE OLMALIDIR.
+ZORUNLU DİL KURALI:
+`headline` (son dakika haber başlığı) ve `reasoning` (gerekçe) alanları KESİNLİKLE %100 TÜRKÇE OLMALIDIR.
 
-Company Context:
-- Company: {company_name}
-- Current Crisis Severity: {crisis_level}/100
-- User's Latest Press Release / Response: '{user_action}'
+Şirket Bilgileri:
+- Şirket Adı: {company_name}
+- Mevcut Kriz Şiddeti: {crisis_level}/100
+- Kullanıcının Son Basın Açıklaması: '{user_action}'
 
-Generate an authoritative news headline or article snippet reacting to the situation in TURKISH.
+Kullanıcının açıklamasına yanıt olarak gazeteci gözüyle dikkat çekici, gerçekçi bir Türkçe son dakika kriz haberi başlığı üret.
 
-IMPORTANT: You MUST format your response as a valid JSON object matching the following instructions:
+Cevabını ZORUNLU olarak aşağıdaki JSON formatında ver:
 {format_instructions}"""),
-        ("user", "Draft breaking news coverage.")
+        ("user", "Son dakika kriz haberini hazırla.")
     ]).partial(format_instructions=journalist_parser.get_format_instructions())
 
     company_ctx = state.get("company_context", {})
@@ -146,7 +146,7 @@ IMPORTANT: You MUST format your response as a valid JSON object matching the fol
     res: JournalistOutput = await chain.ainvoke({
         "company_name": company_ctx.get("company_name", "AetherCorp"),
         "crisis_level": state.get("crisis_level", 50),
-        "user_action": state.get("user_action", "No response issued.")
+        "user_action": state.get("user_action", "Açıklama yapılmadı.")
     })
 
     news_post = {
@@ -190,21 +190,22 @@ async def troll_node(state: SimulationState) -> Dict[str, Any]:
     llm = get_llm(temperature=0.9)
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Troll Agent representing the unscripted, chaotic internet mob in 'Dont Panic'.
-You craft viral, sarcastic, meme-heavy, and savage tweets with hashtags reacting to corporate crisis blunders or PR announcements.
+        ("system", """Sen 'Dont Panic' kriz simülasyonundaki Sosyal Medya ve İnternet Halkı Ajanısın (Troll).
+İnternet dünyasının, Twitter/X halkının mizahi, tepkili, linçleyen veya dalga geçen viralleşen Türkçe paylaşımlarını üretiyorsun.
 
-DİL KURALI: `post_content` (sosyal medya gönderisi/tweet) ve `reasoning` (gerekçe) KESİNLİKLE %100 TÜRKÇE OLMALIDIR. Türkçe sosyal medya (Twitter/X) mizahı, linç tepkileri veya destek tweetleri üretin.
+ZORUNLU DİL KURALI:
+`post_content` (sosyal medya gönderisi) ve `reasoning` (gerekçe) alanları KESİNLİKLE %100 TÜRKÇE OLMALIDIR. Türkçe sosyal medya (Twitter/X) mizahı, linç tepkileri, hashtagler (#AetherCorpSkandalı vb.) kullan.
 
-Company Context:
-- Target Company: {company_name}
-- Current Crisis Severity: {crisis_level}/100
-- User PR Move: '{user_action}'
+Şirket Bilgileri:
+- Şirket Adı: {company_name}
+- Kriz Şiddeti: {crisis_level}/100
+- Kullanıcının Açıklaması: '{user_action}'
 
-Create an engaging, viral social post from an anonymous handle or tech critic in TURKISH.
+Kullanıcının hamlesine yanıt olarak viralleşecek mizahi veya sert bir Türkçe tweet gönderisi üret.
 
-IMPORTANT: You MUST format your response as a valid JSON object matching the following instructions:
+Cevabını ZORUNLU olarak aşağıdaki JSON formatında ver:
 {format_instructions}"""),
-        ("user", "Generate viral public tweet.")
+        ("user", "Viralleşen halk tepkisi tweetini üret.")
     ]).partial(format_instructions=troll_parser.get_format_instructions())
 
     company_ctx = state.get("company_context", {})

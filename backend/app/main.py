@@ -61,12 +61,18 @@ class ConnectionManager:
                 del self.active_connections[session_id]
 
     async def send_personal_message(self, message: Dict[str, Any], websocket: WebSocket):
-        await websocket.send_json(message)
+        try:
+            await websocket.send_json(message)
+        except Exception:
+            pass
 
     async def broadcast_to_session(self, session_id: str, message: Dict[str, Any]):
         if session_id in self.active_connections:
-            for connection in self.active_connections[session_id]:
-                await connection.send_json(message)
+            for connection in list(self.active_connections[session_id]):
+                try:
+                    await connection.send_json(message)
+                except Exception:
+                    self.disconnect(session_id, connection)
 
 
 manager = ConnectionManager()

@@ -85,30 +85,30 @@ class UserActionRequest(BaseModel):
 # ==========================================
 
 class OrchestratorOutput(BaseModel):
-    reasoning: str = Field(..., description="Detailed strategic analysis of the user action against the crisis status")
-    crisis_level_delta: int = Field(..., description="Numerical shift in crisis level (-30 to +30)")
-    brand_reputation_delta: int = Field(..., description="Numerical shift in brand reputation rating (-30 to +30)")
-    stock_price_impact_delta: float = Field(..., description="Percentage shift in stock market price (-15.0 to +10.0)")
+    reasoning: str = Field(..., description="Kullanıcının kriz müdahalesi hakkındaki detaylı Türkçe stratejik değerlendirme ve mantık zinciri (Chain-of-Thought)")
+    crisis_level_delta: int = Field(..., description="Kriz şiddet seviyesindeki sayısal değişim (-30 ile 30 arası tam sayı)")
+    brand_reputation_delta: int = Field(..., description="Marka itibar puanındaki sayısal değişim (-30 ile 30 arası tam sayı)")
+    stock_price_impact_delta: float = Field(..., description="Borsa hisse fiyatındaki yüzde değişim (-15.0 ile 10.0 arası ondalık sayı)")
 
 
 class JournalistOutput(BaseModel):
-    outlet_name: str = Field(..., description="Name of news media outlet (e.g., TechChronicle Daily, Apex Biz Wire)")
-    outlet_handle: str = Field(..., description="Social handle of outlet (e.g., @TechChronicle)")
-    headline: str = Field(..., description="Authoritative breaking news headline or article snippet")
-    sentiment: Literal["negative", "positive", "neutral", "panic"] = Field(..., description="Mainstream media tone")
-    reasoning: str = Field(..., description="Why the journalist framed the story in this specific manner")
-    estimated_likes: int = Field(default=5000, description="Estimated engagement likes")
-    estimated_retweets: int = Field(default=1500, description="Estimated engagement retweets")
-    estimated_replies: int = Field(default=600, description="Estimated engagement replies")
+    outlet_name: str = Field(..., description="Medya organının adı (Örn: Bloomberg Türkiye, TeknoKriz Haber, HürMedya)")
+    outlet_handle: str = Field(..., description="Medya organının sosyal medya kullanıcı adı (Örn: @TeknoKriz)")
+    headline: str = Field(..., description="Türkçe yazılmış dikkat çekici son dakika haber başlığı veya özet metni")
+    sentiment: Literal["negative", "positive", "neutral", "panic"] = Field(..., description="Ana akım medyanın haber tonu")
+    reasoning: str = Field(..., description="Gazetecinin bu haberi bu tonda yazmasının Türkçe mantıksal gerekçesi")
+    estimated_likes: int = Field(default=5000, description="Tahmini beğeni sayısı")
+    estimated_retweets: int = Field(default=1500, description="Tahmini yeniden paylaşım sayısı")
+    estimated_replies: int = Field(default=600, description="Tahmini yorum sayısı")
 
 
 class TrollOutput(BaseModel):
-    handle_name: str = Field(..., description="Display name of internet handle or meme account")
-    handle_tag: str = Field(..., description="Social handle (e.g., @SiliconHater99)")
-    post_content: str = Field(..., description="Outrageous, viral, meme-heavy, or sarcastic tweet with hashtags")
-    sentiment: Literal["outrage", "negative", "neutral", "positive"] = Field(..., description="Viral mob sentiment")
-    reasoning: str = Field(..., description="Why the viral internet mob reacted this way")
-    estimated_likes: int = Field(default=25000, description="Estimated viral likes")
-    estimated_retweets: int = Field(default=8000, description="Estimated viral retweets")
-    estimated_replies: int = Field(default=3500, description="Estimated viral replies")
+    handle_name: str = Field(..., description="Sosyal medya kullanıcısının ekran adı (Örn: Anonim Yazılımcı, Kriz Savar)")
+    handle_tag: str = Field(..., description="Sosyal medya kullanıcı adı (Örn: @kriz_savar)")
+    post_content: str = Field(..., description="Türkçe yazılmış viralleşen, esprili, linç veya mizah içeren sosyal medya paylaşımı/tweet")
+    sentiment: Literal["outrage", "negative", "neutral", "positive"] = Field(..., description="Halkın ve sosyal medyanın tepki tonu")
+    reasoning: str = Field(..., description="Sosyal medya kullanıcısının bu tepkiyi vermesinin Türkçe mantıksal gerekçesi")
+    estimated_likes: int = Field(default=25000, description="Tahmini beğeni sayısı")
+    estimated_retweets: int = Field(default=8000, description="Tahmini yeniden paylaşım sayısı")
+    estimated_replies: int = Field(default=3500, description="Tahmini yorum sayısı")
 

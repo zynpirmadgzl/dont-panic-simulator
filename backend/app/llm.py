@@ -55,10 +55,11 @@ class CustomQwenLLM(BaseChatModel):
         payload = {
             "model": self.model_name,
             "messages": formatted_messages,
-            "temperature": self.temperature
+            "temperature": self.temperature,
+            "response_format": {"type": "json_object"}
         }
 
-        async with httpx.AsyncClient(verify=False, timeout=120.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=httpx.Timeout(300.0, connect=30.0)) as client:
             resp = await client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
             data = resp.json()
